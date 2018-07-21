@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
@@ -170,7 +171,7 @@ func (c Client) GetQuoteOfTheDay() (QuoteOfTheDate, error) {
 	return quote, nil
 }
 
-// GetQuotes returns quotes from filter, defaults to tag type
+// GetQuotes returns random quotes from filter, defaults to tag type
 func (c Client) GetQuotes(filter string, max int) ([]Quote, error) {
 	u, err := url.Parse(baseURL + "quotes")
 	if err != nil {
@@ -204,10 +205,14 @@ func (c Client) GetQuotes(filter string, max int) ([]Quote, error) {
 		return nil, err
 	}
 
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
+	indexes := r.Perm(max)
+
 	quotes := make([]Quote, max)
-	for i, q := range tqs.Quotes {
+	for i, item := range indexes {
 		if i < len(tqs.Quotes) {
-			quotes[i] = q
+			quotes[i] = tqs.Quotes[item]
 		}
 	}
 
